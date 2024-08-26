@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+ <meta charset='utf-8'>
+ <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+ <title>Page Title</title>
+ <meta name='viewport' content='width=device-width, initial-scale=1'>
+ <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+ <script src="clientsupabase.js"></script>
+</head>
+
+<body>
+ <fieldset>
+  <legend>Login</legend>
+  <p><input type="email" name="login"/></p>
+  <p><input type="password" name="senha" /></p>
+  <p><button onclick="logar()">Logar</button></p>
+ </fieldset>
+
+ <script>
+  var client = ClientSubapase.getClient();
+
+  const logar = async function () {
+   let email = document.getElementsByName("login")[0].value;
+   let senha = document.getElementsByName("senha")[0].value;
+   const { data, error } = await client.auth.signInWithPassword({
+    email: email,
+    password: senha,
+   })
+   if (error == null) {
+    window.location = 'index.html';
+   }else{
+    console.log(error);
+    alert("Erro ao logar.\nVerifique login e senha.")
+   }
+  }
+ </script>
+</body>
+
+</html>

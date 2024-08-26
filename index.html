@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+ <meta charset='utf-8'>
+ <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+ <title>Page Title</title>
+ <meta name='viewport' content='width=device-width, initial-scale=1'>
+ <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+ <script src="clientsupabase.js"></script>
+ <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+ <a href="logout.html">Deslogar</a>
+ <fieldset>
+  <legend>Tarefa</legend>
+  <input type="hidden" id="hId" />
+  <input type="text" id="txDescricao" />
+  <button onclick="saveTarefa()">Salvar</button>
+ </fieldset>
+ <table id="tbtarefas">
+  <thead>
+   <tr>
+    <th>Id</th>
+    <th>Descrição</th>
+    <th></th>
+   </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+ </table>
+
+ <script>
+  /*dados da app*/
+  var tarefas = [];
+
+
+  /*métodos básicos*/
+  var client = ClientSubapase.getClient();
+
+  const getTarefas = async function () {
+   const { data, error } = await client
+    .from('tarefas')
+    .select();
+   tarefas = data;
+   tableBody = $("#tbtarefas tbody").empty();
+   tarefas.forEach((t) => {
+    tableBody = $("#tbtarefas tbody").append(`<tr>
+     <td>${t.id}</td>
+     <td>${t.descricao}</td>
+     <td><button onclick='selTarefa(${t.id})'>Seleciona</button></td>
+     <td><button onclick='deleteTarefa(${t.id})'>Excluir</button></td>
+     </tr>`);
+   });
+   $('#hId').val('');
+   $('#txDescricao').val('');
+  }
+
+  const saveTarefa = async function () {
+   if ($('#hId').val() != '') {
+    await updateTarefa();
+   } else {
+    const { error } = await client
+     .from('tarefas')
+     .insert({ descricao: $('#txDescricao').val() });
+    await getTarefas();
+   }
+  }
+
+  const deleteTarefa = async function (_id) {
+   const response = await client
+    .from('tarefas')
+    .delete()
+    .eq('id', _id)
+   await getTarefas();
+  }
+
+  const selTarefa = async function (_id) {
+   const { data, error } = await client
+    .from('tarefas')
+    .select()
+    .eq('id', _id);
+   console.log(data);
+   $('#txDescricao').val(data[0].descricao);
+   $('#hId').val(data[0].id);
+  }
+
+  const updateTarefa = async function () {
+   const { error } = await client
+    .from('tarefas')
+    .update({ descricao: $('#txDescricao').val() })
+    .eq('id', $('#hId').val());
+   console.log(error);
+   await getTarefas();
+  }
+
+
+
+  /*método que inicia a aplicação*/
+  async function startApp() {
+   let u = await ClientSubapase.getUser();
+   if (u == null) {
+    window.location = "login.html";
+   }
+   await getTarefas();
+  }
+
+  startApp();
+
+ </script>
+</body>
+
+</html>

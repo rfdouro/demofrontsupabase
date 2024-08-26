@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+ <meta charset='utf-8'>
+ <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+ <title>Page Title</title>
+ <meta name='viewport' content='width=device-width, initial-scale=1'>
+ <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+ <script src="clientsupabase.js"></script>
+</head>
+
+<body>
+ <script>
+  var client = ClientSubapase.getClient();
+  const deslogar = async function () {
+   const { error } = await client.auth.signOut();
+   console.log(error);
+   if (error == null) {
+    window.location = 'login.html';
+   }
+  }
+  deslogar();
+ </script>
+</body>
+
+</html>
+
