@@ -72,7 +72,7 @@
    const { data, error } = await client
     .from('tarefas')
     .select()
-    .order('id', { ascending: false });
+    .order('dt_tarefa', { ascending: true });
    tarefas = data;
    tableBody = $("#tbtarefas tbody").empty();
    tarefas.forEach((t) => {
