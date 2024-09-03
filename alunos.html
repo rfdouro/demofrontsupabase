@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+ <meta charset='utf-8'>
+ <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+ <title>Alunos</title>
+ <meta name='viewport' content='width=device-width, initial-scale=1'>
+ <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+ <script src="clientsupabase.js"></script>
+ <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+ <style>
+  #tbalunos {
+   width: 100%;
+  }
+
+  #tbalunos td {
+   border: solid 1px #3832e3;
+  }
+
+  #tbalunos td:nth-child(1) {
+   text-align: center;
+  }
+
+  #tbalunos td:nth-child(2) {
+   width: 15%;
+   text-align: center;
+  }
+
+  #tbalunos td:nth-child(3) {
+   width: 45%;
+  }
+
+  #tbalunos td:nth-child(4) {
+   width: 15%;
+   text-align: center;
+  }
+
+  #tbalunos td:nth-child(5) {
+   width: 15%;
+   text-align: center;
+  }
+
+  .link {
+   cursor: pointer;
+  }
+
+  .link:hover {
+   color: blue;
+  }
+ </style>
+</head>
+
+<body>
+ <div id="menu"></div>
+ <fieldset>
+  <legend>Aluno</legend>
+  <input type="hidden" id="hId" />
+  <input type="text" id="txnome" />
+  <input type="text" id="txmatricula" />
+  <button onclick="saveAluno()">Salvar</button>
+ </fieldset>
+ <table id="tbalunos">
+  <thead>
+   <tr>
+    <th>Id</th>
+    <th onclick="setOrder()" class="link">Data</th>
+    <th>Descrição</th>
+    <th></th>
+   </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+ </table>
+
+ <script>
+  /*carrega menu*/
+  $("#menu").load("menu.html");
+
+  /*dados da app*/
+  var alunos = [];
+  var order = true;
+
+  const setOrder = async () => {
+   order = !order;
+   await getAlunos();
+  }
+
+
+  /*métodos básicos*/
+  var client = ClientSubapase.getClient();
+
+  const getAlunos = async function () {
+   const { data, error } = await client
+    .from('alunos')
+    .select()
+    .order('nome', { ascending: order });
+   alunos = data;
+   tableBody = $("#tbalunos tbody").empty();
+   alunos.forEach((t) => {
+    tableBody = $("#tbalunos tbody").append(`<tr>
+     <td>${t.id}</td>
+     <td>${t.nome}</td>
+     <td>${t.matricula}</td>
+     <td><button onclick='selAluno(${t.id})'>Selecionar</button></td>
+     <td><button onclick='deleteAluno(${t.id})'>Excluir</button></td>
+     </tr>`);
+   });
+   $('#hId').val('');
+   $('#txnome').val('');
+   $('#txmatricula').val('');
+  }
+
+  const saveAluno = async function () {
+   if ($('#hId').val() != '') {
+    await updateAluno();
+   } else {
+    const { error } = await client
+     .from('alunos')
+     .insert({
+      matricula: $('#txmatricula').val(),
+      nome: $('#txnome').val()
+     });
+    if (error != null) {
+     alert('digite os campos')
+    }
+    await getAlunos();
+   }
+  }
+
+  const deleteAluno = async function (_id) {
+   if (confirm('Confirma a exclusão?')) {
+    const response = await client
+     .from('alunos')
+     .delete()
+     .eq('id', _id)
+    if (response != null && response.error != null) {
+     alert(response.error.message);
+    }
+    await getAlunos();
+   }
+  }
+
+  const selAluno = async function (_id) {
+   const { data, error } = await client
+    .from('alunos')
+    .select()
+    .eq('id', _id);
+   console.log(data);
+   $('#txmatricula').val(data[0].matricula);
+   $('#txnome').val(data[0].nome);
+   $('#hId').val(data[0].id);
+  }
+
+  const updateAluno = async function () {
+   const { error } = await client
+    .from('alunos')
+    .update({
+     matricula: $('#txmatricula').val(),
+     nome: $('#txnome').val()
+    })
+    .eq('id', $('#hId').val());
+   if (error != null) {
+    alert('digite os campos')
+   }
+   await getAlunos();
+  }
+
+
+
+  /*método que inicia a aplicação*/
+  async function startApp() {
+   let u = await ClientSubapase.getUser();
+   if (u == null) {
+    window.location = "login.html";
+   }
+   await getAlunos();
+  }
+
+  startApp();
+
+ </script>
+</body>
+
+</html>

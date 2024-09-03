@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Tarefas</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="clientsupabase.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    #tbtarefas {
+      width: 100%;
+    }
+
+    #tbtarefas td {
+      border: solid 1px #3832e3;
+    }
+
+    #tbtarefas td:nth-child(1) {
+      text-align: center;
+    }
+
+    #tbtarefas td:nth-child(2) {
+      width: 15%;
+      text-align: center;
+    }
+
+    #tbtarefas td:nth-child(3) {
+      width: 45%;
+    }
+
+    #tbtarefas td:nth-child(4) {
+      width: 15%;
+      text-align: center;
+    }
+
+    #tbtarefas td:nth-child(5) {
+      width: 15%;
+      text-align: center;
+    }
+
+    .link {
+      cursor: pointer;
+    }
+
+    .link:hover {
+      color: blue;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="menu"></div>
+  <fieldset>
+    <legend>Tarefa</legend>
+    <input type="hidden" id="hId" />
+    <input type="text" id="txDescricao" />
+    <select id="selectalunos">
+
+    </select>
+    <input type="date" id="txdt_tarefa" />
+    <button onclick="saveTarefa()">Salvar</button>
+  </fieldset>
+  <table id="tbtarefas">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th onclick="setOrder()" class="link">Data</th>
+        <th>Descrição</th>
+        <th>Responsável</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+  <script>
+    /*carrega menu*/
+    $("#menu").load("menu.html");
+
+    /*dados da app*/
+    var tarefas = [];
+    var order = true;
+    //lista de alunos 
+    var alunos = [];
+
+    const setOrder = async () => {
+      order = !order;
+      await getTarefas();
+    }
+
+
+    /*métodos básicos*/
+    var client = ClientSubapase.getClient();
+
+    const getAlunos = async function () {
+      const { data, error } = await client
+        .from('alunos')
+        .select()
+        .order('nome', { ascending: order });
+      alunos = data;
+      tableBody = $("#selectalunos").empty();
+      alunos.forEach((t) => {
+        tableBody = $("#selectalunos").append(`<option value='${t.id}'>
+     ${t.nome} (${t.matricula})
+     </option>`);
+      });
+      $('#hId').val('');
+      $('#txnome').val('');
+      $('#txmatricula').val('');
+    }
+
+    const getTarefas = async function () {
+      const { data, error } = await client
+        .from('tarefas')
+        .select(`id, descricao, dt_tarefa, alunos(id, nome)`)
+        .order('dt_tarefa', { ascending: order });
+      tarefas = data;
+      console.log(tarefas);
+      tableBody = $("#tbtarefas tbody").empty();
+      tarefas.forEach((t) => {
+        tableBody = $("#tbtarefas tbody").append(`<tr>
+     <td>${t.id}</td>
+     <td>${t.dt_tarefa}</td>
+     <td>${t.descricao}</td>
+     <td>${(t.alunos) ? t.alunos.nome : ''}</td>
+     <td><button onclick='selTarefa(${t.id})'>Selecionar</button></td>
+     <td><button onclick='deleteTarefa(${t.id})'>Excluir</button></td>
+     </tr>`);
+      });
+      $('#hId').val('');
+      $('#txDescricao').val('');
+      $('#txdt_tarefa').val('');
+    }
+
+    const saveTarefa = async function () {
+      if ($('#hId').val() != '') {
+        await updateTarefa();
+      } else {
+        const { error } = await client
+          .from('tarefas')
+          .insert({
+            descricao: $('#txDescricao').val(),
+            dt_tarefa: $('#txdt_tarefa').val(),
+            id_aluno: $('#selectalunos').val()
+          });
+        await getTarefas();
+      }
+    }
+
+    const deleteTarefa = async function (_id) {
+      if (confirm('Confirma a exclusão?')) {
+        const response = await client
+          .from('tarefas')
+          .delete()
+          .eq('id', _id)
+        await getTarefas();
+      }
+    }
+
+    const selTarefa = async function (_id) {
+      const { data, error } = await client
+        .from('tarefas')
+        .select(`id, descricao, dt_tarefa, alunos(id, nome)`)
+        .eq('id', _id);
+      console.log(data);
+      $('#txDescricao').val(data[0].descricao);
+      $('#txdt_tarefa').val(data[0].dt_tarefa);
+      $('#hId').val(data[0].id);
+      if (data[0].alunos)
+        $('#selectalunos').val(data[0].alunos.id);
+    }
+
+    const updateTarefa = async function () {
+      const { error } = await client
+        .from('tarefas')
+        .update({
+          descricao: $('#txDescricao').val(),
+          dt_tarefa: $('#txdt_tarefa').val(),
+          id_aluno: $('#selectalunos').val()
+        })
+        .eq('id', $('#hId').val());
+      console.log(error);
+      await getTarefas();
+    }
+
+
+
+    /*método que inicia a aplicação*/
+    async function startApp() {
+      let u = await ClientSubapase.getUser();
+      if (u == null) {
+        window.location = "login.html";
+      }
+      await getAlunos();
+      await getTarefas();
+    }
+
+    startApp();
+
+  </script>
+</body>
+
+</html>
