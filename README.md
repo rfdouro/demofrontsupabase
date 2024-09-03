@@ -7,6 +7,10 @@ Para pesquisas mais aprofundadas:
 * [Client libs](https://supabase.com/docs/guides/api/rest/client-libs)
 * [JS lib](https://supabase.com/docs/reference/javascript/start)
 
+## Aplicação funcionando
+
+[Cadastro de Alunos e Tarefas](https://rfdouro.github.io/demofrontsupabase/)
+
 ## Dados de teste
 
 * Usuário:
