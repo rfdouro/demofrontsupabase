@@ -34,6 +34,12 @@
    width: 15%;
    text-align: center;
   }
+  .link{
+    cursor: pointer;
+  }
+  .link:hover{
+    color: blue;
+  }
  </style>
 </head>
 
@@ -50,7 +56,7 @@
   <thead>
    <tr>
     <th>Id</th>
-    <th>Data</th>
+    <th onclick="setOrder()" class="link">Data</th>
     <th>Descrição</th>
     <th></th>
    </tr>
@@ -63,6 +69,12 @@
  <script>
   /*dados da app*/
   var tarefas = [];
+  var order = true;
+
+  const setOrder = async () => { 
+    order = !order;
+    await getTarefas();
+  }
 
 
   /*métodos básicos*/
@@ -72,7 +84,7 @@
    const { data, error } = await client
     .from('tarefas')
     .select()
-    .order('dt_tarefa', { ascending: true });
+    .order('dt_tarefa', { ascending: order });
    tarefas = data;
    tableBody = $("#tbtarefas tbody").empty();
    tarefas.forEach((t) => {
