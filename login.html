@@ -15,8 +15,11 @@
   <legend>Login</legend>
   <p><input type="email" name="login"/></p>
   <p><input type="password" name="senha" /></p>
-  <p><button onclick="logar()">Logar</button></p>
+  <p><button onclick="logar()">Logar</button> &nbsp; | &nbsp;<button onclick="abrecadnusuario()">Novo usuário</button></p>
  </fieldset>
+ <hr/>
+ <p>Use o usuário <b>xdb@xdb.com</b> senha <b>12345678</b> para testes</p>
+ <hr/>
 
  <script>
   var client = ClientSubapase.getClient();
@@ -34,6 +37,10 @@
     console.log(error);
     alert("Erro ao logar.\nVerifique login e senha.")
    }
+  }
+
+  const abrecadnusuario = function (){
+   window.location = 'cadnusuario.html';
   }
  </script>
 </body>

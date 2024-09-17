@@ -16,7 +16,7 @@ Para pesquisas mais aprofundadas:
 * Usuário:
   * teste@teste.com
 * Senha:
-  * 1234
+  * 123456
 
 Esse usuário apenas faz leitura e alterações. Existem **regras** (*policies*) no serviço `SUPABASE` implementadas que dão autorização apenas para um outro usuário fazer a inserção ou exclusão dos dados.
 
@@ -37,3 +37,35 @@ Esse usuário apenas faz leitura e alterações. Existem **regras** (*policies*)
     * ![inserindo dados](inserindo_dados.png)
     * Exemplo de seleção de dados
     * ![recuperando dados](recuperando_dados.png)
+
+
+# Total de usuários
+
+Para travar o total de usuários foi criada uma trigger direto no banco de dados usando o script:
+
+````
+--select count(*) from auth.users u ;
+
+drop trigger if exists insere_usuario_check on auth.users;
+drop function if exists auth.checa_total_users;
+
+CREATE FUNCTION auth.checa_total_users()
+  RETURNS trigger AS
+$func$
+BEGIN
+   IF (select count(*) from auth.users u) >= 5 THEN
+      RAISE EXCEPTION 'Número total de usuários atingido';
+   END IF;
+   RETURN NEW;
+END
+$func$  LANGUAGE plpgsql;
+
+
+CREATE TRIGGER insere_usuario_check
+BEFORE INSERT ON auth.users 
+FOR EACH ROW EXECUTE PROCEDURE auth.checa_total_users();
+````
+
+Diante disso o número total de usuários possível é 5. Caso tente inserir é gerado um erro no banco
+
+![Erro ao inserir usuário](erro_insere_usuario.png)
