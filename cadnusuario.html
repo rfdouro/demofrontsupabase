@@ -2,72 +2,76 @@
 <html>
 
 <head>
- <meta charset='utf-8'>
- <meta http-equiv='X-UA-Compatible' content='IE=edge'>
- <title>Acessar</title>
- <meta name='viewport' content='width=device-width, initial-scale=1'>
- <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
- <script src="clientsupabase.js"></script>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Acessar</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="clientsupabase.js"></script>
 </head>
 
 <body>
- <fieldset>
-  <legend>Novo usuário</legend>
-  <p><input type="email" name="login" /></p>
-  <p><input type="password" name="senha" /></p>
-  <p><button onclick="salvar()">Salvar</button> &nbsp; | &nbsp;<button
-    onclick="window.location='login.html'">Voltar</button></p>
- </fieldset>
- <hr />
- <p>Para o correto funcionamento do cadastro deve-se desabilitar a opção de confirmação por e-mail</p>
- <img src="disable-email-confirm.png" style="width:80%" />
+  <fieldset>
+    <legend>Novo usuário</legend>
+    <p><input type="email" name="login" /></p>
+    <p><input type="password" name="senha" /></p>
+    <p><button onclick="salvar()">Salvar</button> &nbsp; | &nbsp;<button
+        onclick="window.location='login.html'">Voltar</button></p>
+  </fieldset>
+  <hr />
+  <p>Para o correto funcionamento do cadastro deve-se desabilitar a opção de confirmação por e-mail</p>
+  <img src="disable-email-confirm.png" style="width:80%" />
 
- <script>
-  var client = ClientSubapase.getClient();
+  <script>
+    var client = ClientSubapase.getClient();
 
-  const totalusuarios = async function () {
-   const { data, count } = await client
-    .from('usuarios')
-    .select('*', { count: 'exact', head: true });
-   return count;
-  }
-
-  const salvar = async function () {
-
-   let x = await totalusuarios();
-   if(x >= 5){
-    alert('número total de usuários adicionais atingido');
-    return;
-   }
-
-   let _email = document.getElementsByName("login")[0].value;
-   let _senha = document.getElementsByName("senha")[0].value;
-   const { data, error } = await client.auth.signUp({
-    email: _email,
-    password: _senha,
-   })
-
-   if (data.user == null && data.session == null) {
-    alert('usuário já cadastrado');
-    return;
-   }
-   else if (data.user != null && data.session != null) {
-    const { errort } = await client
-     .from('usuarios')
-     .insert({
-      email: _email,
-      senha: _senha
-     });
-    if (errort == null) {
-     alert('usuário criado com sucesso');
-     window.location = 'index.html';
-    } else {
-     console.log(errort);
-     alert("Ocorreu um erro.")
+    const totalusuarios = async function () {
+      const { data, count } = await client
+        .from('usuarios')
+        .select('*', { count: 'exact', head: true });
+      return count;
     }
-   }
-  }
- </script>
+
+    const salvar = async function () {
+
+      let x = await totalusuarios();
+      if (x >= 5) {
+        alert('número total de usuários adicionais atingido');
+        return;
+      }
+
+      let _email = document.getElementsByName("login")[0].value;
+      let _senha = document.getElementsByName("senha")[0].value;
+      const { data, error } = await client.auth.signUp({
+        email: _email,
+        password: _senha,
+      })
+
+      if (data.user == null && data.session == null) {
+        if (error.message) {
+          alert(`ERRO ${error.message}`);
+        } else {
+          alert('Provavelmente, usuário já cadastrado');
+        }
+        return;
+      }
+      else if (data.user != null && data.session != null) {
+        const { errort } = await client
+          .from('usuarios')
+          .insert({
+            email: _email,
+            senha: _senha
+          });
+        if (errort == null) {
+          alert('usuário criado com sucesso');
+          window.location = 'index.html';
+        } else {
+          console.log(errort);
+          alert("Ocorreu um erro.")
+        }
+      }
+    }
+  </script>
 </body>
 
 </html>
