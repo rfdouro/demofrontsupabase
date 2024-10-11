@@ -20,6 +20,10 @@ Para pesquisas mais aprofundadas:
 
 Esse usuário apenas faz leitura e alterações. Existem **regras** (*policies*) no serviço `SUPABASE` implementadas que dão autorização apenas para um outro usuário fazer a inserção ou exclusão dos dados.
 
+## Modelo de dados utilizado
+
+![Modelo de dados](modelodados.png)
+
 
 # Para usuários avançados usando API REST
 
